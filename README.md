@@ -1,5 +1,5 @@
 # Task: NFT Lottery
-You have to create a NFT Lottery on a Hardhat environment( https://hardhat.org ) or Foundry. Users should be able to buy a ticket which is an actual NFT. The funds from each ticket purchase are gathered in a prize pool. After a certain period of time a random winner should be chosen. We also want to be able to update our NFT tickets in the future.
+You have to create a NFT Lottery on a Foundry environment. Users should be able to buy a ticket which is an actual NFT. The funds from each ticket purchase are gathered in a prize pool. After a certain period of time a random winner should be chosen. We also want to be able to update our NFT tickets in the future.
 
 ## Contracts:
 ### Ticket
@@ -41,3 +41,25 @@ You have to create a NFT Lottery on a Hardhat environment( https://hardhat.org )
 git clone
 yarn
 npx hardhat run scripts/lottery.js OR npx hardhat test (if bonus task is done)
+
+### Contract Structure
+// Layout of Contract:
+// version
+// imports
+// errors
+// interfaces, libraries, contracts
+// Type declarations
+// State variables
+// Events
+// Modifiers
+// Functions
+
+// Layout of Functions:
+// constructor
+// receive function (if exists)
+// fallback function (if exists)
+// external
+// public
+// internal
+// private
+// view & pure functions
