@@ -26,4 +26,7 @@ interface TicketInterface {
 
     function paySmallReward() external;
     function payGrandReward() external;
+
+    function saleOpen() external view returns (bool);
+    function saleClosed() external view returns (bool);
 }

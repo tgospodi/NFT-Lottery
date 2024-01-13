@@ -1,34 +1,3 @@
-// Layout of Contract:
-// version
-// imports
-// errors
-// interfaces, libraries, contracts
-// Type declarations
-// State variables
-// Events
-// Modifiers
-// Functions
-
-// Layout of Functions:
-// constructor
-// receive function (if exists)
-// fallback function (if exists)
-// external
-// public
-// internal
-// private
-// view & pure functions
-
-// [ ] You should create NFT contract that represents a ticket.
-// [ ] A ticket should have simple metadata on-chain data. - URIStorage
-// [ ]      Bonus * Additional data can be stored off-chain. - URIStorage
-// [ ] Users should be able to buy tickets. - Purchase tickets
-// [ ] Starting from a particular block people can buy tickets for limited time.
-// [ ] Funds from purchases should be stored in the contract.
-// [ ] Only the contract itself can use these funds.
-// [ ] After purchase time ends a random winner should be selected. You can complete simple random generation.
-// [ ] A function for a surprise winner should be created which will award the random generated winner with 50% of the gathered funds.
-
 // SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.20;
@@ -253,5 +222,13 @@ contract Ticket is TicketInterface, ERC721URIStorageUpgradeable, ReentrancyGuard
         if (!success) {
             revert Ticket__TransactionFailed();
         }
+    }
+
+    function saleOpen() external view override returns (bool) {
+        return lotteryState == LotteryState.OPEN;
+    }
+
+    function saleClosed() external view override returns (bool) {
+        return lotteryState == LotteryState.CLOSED;
     }
 }
