@@ -22,8 +22,8 @@ interface TicketInterface {
 
     function pickWinner() external;
     function draftSmallPrizeWinner(uint256) external;
-    // function draftGrandPrizeWinner() external;
+    function draftGrandPrizeWinner(uint256) external;
 
-    // function paySmallReward() external;
-    // function payGrandReward() external;
+    function paySmallReward() external;
+    function payGrandReward() external;
 }

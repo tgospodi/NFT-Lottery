@@ -37,6 +37,7 @@ import {ERC721URIStorageUpgradeable} from
     "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol";
 import {TicketInterface} from "./interfaces/TicketInterface.i.sol";
 import {Draft} from "./Draft.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 error Ticket__InvalidParameters();
 error Ticket__InvalidPurchasingPrice();
@@ -44,6 +45,8 @@ error Ticket__LotteryNotOpen();
 error Ticket__NotEnoughTimePassed();
 error Ticket__WinnerAlreadyPicked();
 error Ticket__Unauthorized();
+error Ticket__WinnerAlreadyPaid();
+error Ticket__TransactionFailed();
 
 /**
  * @title NFT Lottery
@@ -52,7 +55,7 @@ error Ticket__Unauthorized();
  * @notice Allows users to buy tickets for a lottery for a certain period of time, and then randomly select a winner
  *
  */
-contract Ticket is TicketInterface, ERC721URIStorageUpgradeable {
+contract Ticket is TicketInterface, ERC721URIStorageUpgradeable, ReentrancyGuard {
     Draft public DRAFT;
     LotteryState public lotteryState;
     uint256 public START_TIMESTAMP;
@@ -63,9 +66,12 @@ contract Ticket is TicketInterface, ERC721URIStorageUpgradeable {
 
     uint256 public smallWinnerTicketId;
     uint256 public smallWinnerRewardAmount;
+    uint256 public grandWinnerTicketId;
 
     bool smallWinnerPicked;
     bool grandWinnerPicked;
+    bool smallPrizePaid;
+    bool grandPrizePaid;
 
     /**
      * @notice Initializer function which acts as constructor for upgradeable contracts.
@@ -192,9 +198,60 @@ contract Ticket is TicketInterface, ERC721URIStorageUpgradeable {
         emit SmallPrizeWinnerDrafted(ownerOf(smallWinnerTicketId), smallWinnerRewardAmount);
     }
 
-    // function draftGrandPrizeWinner(uint256 randomness) external override {}
+    function draftGrandPrizeWinner(uint256 randomness) external override {
+        if (msg.sender != address(DRAFT)) {
+            revert Ticket__Unauthorized();
+        }
+        if (grandWinnerPicked) {
+            revert Ticket__WinnerAlreadyPicked();
+        }
 
-    // function paySmallReward() external override {}
+        // using modulo division to get a random tokenId
+        grandWinnerTicketId = randomness % s_tokenId;
+        grandWinnerPicked = true;
+    }
 
-    // function payGrandReward() external override {}
+    // Transfer half the funds to the small lottery winner
+    function paySmallReward() external override nonReentrant {
+        address winner = ownerOf(smallWinnerTicketId);
+
+        if (msg.sender != winner) {
+            revert Ticket__Unauthorized();
+        }
+        if (smallPrizePaid) {
+            revert Ticket__WinnerAlreadyPaid();
+        }
+
+        smallPrizePaid = true;
+
+        (bool success,) = winner.call{value: smallWinnerRewardAmount}("");
+        if (!success) {
+            revert Ticket__TransactionFailed();
+        }
+    }
+
+    function payGrandReward() external override nonReentrant {
+        address winner = ownerOf(grandWinnerTicketId);
+
+        if (msg.sender != winner) {
+            revert Ticket__Unauthorized();
+        }
+        if (grandPrizePaid) {
+            revert Ticket__WinnerAlreadyPaid();
+        }
+
+        uint256 grandRewardAmount;
+        if (smallPrizePaid) {
+            grandRewardAmount = address(this).balance;
+        } else {
+            grandRewardAmount = address(this).balance - smallWinnerRewardAmount;
+        }
+
+        grandPrizePaid = true;
+
+        (bool success,) = winner.call{value: grandRewardAmount}("");
+        if (!success) {
+            revert Ticket__TransactionFailed();
+        }
+    }
 }
