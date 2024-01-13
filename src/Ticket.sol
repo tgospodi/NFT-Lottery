@@ -20,9 +20,9 @@
 // view & pure functions
 
 // [ ] You should create NFT contract that represents a ticket.
-// [ ] A ticket should have simple metadata on-chain data.
-// [ ]      Bonus * Additional data can be stored off-chain.
-// [ ] Users should be able to buy tickets.
+// [ ] A ticket should have simple metadata on-chain data. - URIStorage
+// [ ]      Bonus * Additional data can be stored off-chain. - URIStorage
+// [ ] Users should be able to buy tickets. - Purchase tickets
 // [ ] Starting from a particular block people can buy tickets for limited time.
 // [ ] Funds from purchases should be stored in the contract.
 // [ ] Only the contract itself can use these funds.
@@ -33,18 +33,23 @@
 
 pragma solidity ^0.8.20;
 
-// import {ERC721URIStorage} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
-// import {ERC721Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import {ERC721URIStorageUpgradeable} from
     "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol";
 import {TicketInterface} from "./interfaces/TicketInterface.i.sol";
 
 error Ticket__InvalidParameters();
 error Ticket__InvalidPurchasingPrice();
-error Ticket__RaffleNotOpen();
+error Ticket__LotteryNotOpen();
 
+/**
+ * @title NFT Lottery
+ * @author Todor Gospodinov
+ * @notice Upgreadable ERC721 contract for lottery ticket
+ * @notice Allows users to buy tickets for a lottery for a certain period of time, and then randomly select a winner
+ *
+ */
 contract Ticket is TicketInterface, ERC721URIStorageUpgradeable {
-    RaffleState public raffleState;
+    LotteryState public lotteryState;
     uint256 public START_TIMESTAMP;
     uint256 public END_TIMESTAMP;
 
@@ -55,8 +60,8 @@ contract Ticket is TicketInterface, ERC721URIStorageUpgradeable {
      * @notice Initializer function which acts as constructor for upgradeable contracts.
      * @param name_  The name of the token.
      * @param symbol_  The symbol used to display the token.
-     * @param _startTimestamp  The timestamp when the raffle starts.
-     * @param _endTimestamp  The timestamp when the raffle ends.
+     * @param _startTimestamp  The timestamp when the lottery starts.
+     * @param _endTimestamp  The timestamp when the lottery ends.
      * @param _ticketPrice  The price of a ticket.
      */
     function initialize(
@@ -80,31 +85,36 @@ contract Ticket is TicketInterface, ERC721URIStorageUpgradeable {
         __ERC721_init(name_, symbol_);
     }
 
-    modifier updateRaffleState() {
+    modifier updateLotteryState() {
         if (block.timestamp >= START_TIMESTAMP && block.timestamp <= END_TIMESTAMP) {
-            raffleState = RaffleState.OPEN;
+            lotteryState = LotteryState.OPEN;
         } else {
-            raffleState = RaffleState.CLOSED;
+            lotteryState = LotteryState.CLOSED;
         }
         _;
     }
 
-    modifier onlyWhenRaffleOpen() {
-        if (raffleState != RaffleState.OPEN) {
-            revert Ticket__RaffleNotOpen();
+    modifier onlyWhenLotteryIsOpen() {
+        if (lotteryState != LotteryState.OPEN) {
+            revert Ticket__LotteryNotOpen();
         }
         _;
     }
 
-    // Users should be able to buy tickets only when the raffle is open
-    function buyTicket() external payable override onlyWhenRaffleOpen {
+    // Users should be able to buy tickets only when the lottery is OPEN
+    function buyTicket() external payable override onlyWhenLotteryIsOpen {
         if (msg.value != TICKET_PRICE) {
             revert Ticket__InvalidPurchasingPrice();
         }
         _purchaseTicket("");
     }
 
-    function buyTicketWithURI(string calldata tokenURI_) external payable override {}
+    function buyTicketWithURI(string calldata tokenURI_) external payable override onlyWhenLotteryIsOpen {
+        if (msg.value != TICKET_PRICE) {
+            revert Ticket__InvalidPurchasingPrice();
+        }
+        _purchaseTicket(tokenURI_);
+    }
 
     /**
      * @notice Internal function to purchase a ticket with an optional tokenURI.
@@ -118,7 +128,10 @@ contract Ticket is TicketInterface, ERC721URIStorageUpgradeable {
         s_tokenId++;
     }
 
-    // function pickWinner() external override {}
+    /**
+     * @notice
+     */
+    function pickWinner() external override {}
 
     // function draftSmallPrizeWinner() external override {}
 

@@ -3,7 +3,7 @@
 pragma solidity ^0.8.20;
 
 interface TicketInterface {
-    enum RaffleState {
+    enum LotteryState {
         OPEN, // converted to 0?
         CLOSED // converted to 1?
     }
@@ -19,7 +19,7 @@ interface TicketInterface {
     function buyTicket() external payable;
     function buyTicketWithURI(string calldata tokenURI_) external payable;
 
-    // function pickWinner() external;
+    function pickWinner() external;
     // function draftSmallPrizeWinner() external;
     // function draftGrandPrizeWinner() external;
 
