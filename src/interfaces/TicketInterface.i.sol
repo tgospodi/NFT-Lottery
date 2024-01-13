@@ -13,14 +13,15 @@ interface TicketInterface {
         string calldata symbol_,
         uint256 _startTimestamp,
         uint256 _endTimestamp,
-        uint128 _ticketPrice
+        uint128 _ticketPrice,
+        address _draftAddress
     ) external;
 
     function buyTicket() external payable;
     function buyTicketWithURI(string calldata tokenURI_) external payable;
 
     function pickWinner() external;
-    // function draftSmallPrizeWinner() external;
+    function draftSmallPrizeWinner(uint256) external;
     // function draftGrandPrizeWinner() external;
 
     // function paySmallReward() external;
