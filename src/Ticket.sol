@@ -8,23 +8,23 @@ import {TicketInterface} from "./interfaces/TicketInterface.i.sol";
 import {Draft} from "./Draft.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-error Ticket__InvalidParameters();
-error Ticket__InvalidPurchasingPrice();
-error Ticket__LotteryNotOpen();
-error Ticket__NotEnoughTimePassed();
-error Ticket__WinnerAlreadyPicked();
-error Ticket__Unauthorized();
-error Ticket__WinnerAlreadyPaid();
-error Ticket__TransactionFailed();
-
 /**
  * @title NFT Lottery
  * @author Todor Gospodinov
  * @notice Upgreadable ERC721 contract for lottery ticket
- * @notice Allows users to buy tickets for a lottery for a certain period of time, and then randomly select a winner
+ * @notice Allows users to buy tickets for a lottery for a certain period of time, and then randomly selects a winner
  *
  */
 contract Ticket is TicketInterface, ERC721URIStorageUpgradeable, ReentrancyGuard {
+    error Ticket__InvalidParameters();
+    error Ticket__InvalidPurchasingPrice();
+    error Ticket__LotteryNotOpen();
+    error Ticket__NotEnoughTimePassed();
+    error Ticket__WinnerAlreadyPicked();
+    error Ticket__Unauthorized();
+    error Ticket__WinnerAlreadyPaid();
+    error Ticket__TransactionFailed();
+
     Draft public DRAFT;
     LotteryState public lotteryState;
     uint256 public START_TIMESTAMP;
@@ -230,5 +230,21 @@ contract Ticket is TicketInterface, ERC721URIStorageUpgradeable, ReentrancyGuard
 
     function saleClosed() external view override returns (bool) {
         return lotteryState == LotteryState.CLOSED;
+    }
+
+    function startTimestamp() external view returns (uint256) {
+        return START_TIMESTAMP;
+    }
+
+    function endTimestamp() external view returns (uint256) {
+        return END_TIMESTAMP;
+    }
+
+    function ticketPrice() external view returns (uint128) {
+        return TICKET_PRICE;
+    }
+
+    function draftAddress() external view returns (address) {
+        return address(DRAFT);
     }
 }
