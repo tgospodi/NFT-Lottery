@@ -21,7 +21,7 @@ error Ticket__TransactionFailed();
  * @title NFT Lottery
  * @author Todor Gospodinov
  * @notice Upgreadable ERC721 contract for lottery ticket
- * @notice Allows users to buy tickets for a lottery for a certain period of time, and then randomly select a winner
+ * @notice Allows users to buy tickets for a lottery for a certain period of time, and then randomly selects a winner
  *
  */
 contract Ticket is TicketInterface, ERC721URIStorageUpgradeable, ReentrancyGuard {
